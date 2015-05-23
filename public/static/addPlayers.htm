@@ -1,0 +1,56 @@
+<h1> Add players</h1>
+<hr>
+<div id="addPlayers">
+	<form class="inline-form" role="form" name="addPlayersForm" ng-submit="addPlayers(currentTeam)">
+			<div class="form-group">
+				<div class="dropdown pull-left">
+					<button class="btn btn-default dropdown-toggle" type="button" id="menu1" data-toggle="dropdown">{{currentSeason.name}}
+					<span class="caret"></span></button>
+					<ul class="dropdown-menu" role="menu" aria-labelledby="menu4">
+						<li role="presentation" ng-repeat="season in seasons" ng-click="setSeason(season)"><a role="menuitem" tabindex="-1" href="#">{{season.name}}</a></li>
+					</ul>
+				</div> <!-- dropdown -->
+				<div class="margined-left">
+					<select class="selectpicker show-tick form-control team-name" ng-model="currentTeam" data-live-search="true" required>
+						<option ng-repeat="team in seasonParticipants">{{team}}</option>
+					</select>
+				</div>
+			</div>
+			<div class="form-group teamOptionBox">
+				<label for="playersNum">Players number:</label>
+				<input type="number" class="form-control number" min="0" ng-model="playersNumber"/>
+			</div>
+			<br>
+			<br>
+			<div class="panel panel-default">
+				<!-- Default panel contents -->
+				<div class="panel-heading">
+					<span>{{currentTeam}} player list for season {{currentSeason.name}}</span>
+				</div> <!-- panel-heading -->
+				<!-- Table -->
+				<table class="table">
+					<thead>
+						<th>#</th>
+						<th>First name</th>
+						<th>Second name</th>
+						<th>Date of birth</th>
+						<!-- <th>Phone</th> -->
+						<!-- <th>Cap</th> -->
+					</thead>
+					<tbody>
+						<tr ng-repeat="item in range(playersNumber) track by $index">
+							<td>{{$index+1}}</td>
+							<td><input type="text" class="form-control firstNameInput" placeholder="Name" ng-model="players[$index].name" required/></td>
+							<td><input type="text" class="form-control firstNameInput" placeholder="Second name" ng-model="players[$index].secondName" required/></td>
+							<td><input type="text" date-format="yyyy-mm-dd" class="form-control birthInput" placeholder="yyyy-mm-dd" ng-model="players[$index].dateOfBirth"/></td>
+							<!-- <td><input type="phone" class="form-control phoneInput" placeholder="+38(063)-72-47-672" ng-model="players[$index].phone"/></td> -->
+							<!-- <td><input type="radio" name="isCapitanRadioGroup" class="form-control" ng-model="players[$index].isCapitan" ng-change="players[$index].isCapitan=!players[$index].isCapitan"/></td> -->
+						</tr>
+						
+					</tbody>
+				</table>
+			</div> <!-- panel panel-default -->
+			<hr>
+			<button class="btn btn-success" type="submit" href="#">Add Players</button>
+	</form>
+</div>

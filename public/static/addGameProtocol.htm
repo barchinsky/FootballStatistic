@@ -1,0 +1,110 @@
+<h1>Add game</h1>
+<hr>
+<form class="form-inline" role="form" name="addGameForm" ng-submit="addGame()" >
+	<div class="form-group">
+		<label for="seasonCombo" class="pull-left">Apply to season</label>
+		<div class="dropdown" id="seasonCombo">
+			<button class="btn btn-default dropdown-toggle" type="button" id="menu1" data-toggle="dropdown">{{currentSeason.name}}
+			<span class="caret"></span></button>
+			<ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
+				<li role="presentation" ng-repeat="season in seasons" ng-click="setSeason(season)"><a role="menuitem" tabindex="-1" href="#">{{season.name}}</a></li>
+			</ul>
+		</div> <!-- dropdown -->
+	</div>
+	<br>
+	<hr>
+	<div class="protocol">
+		<div>
+			<label>Game date:</label>
+			<input class="form-control date" type="text" placeholder="yyyy-mm-dd" ng-model="game.date" required>
+		</div>
+		<div class="form-row">
+			<div class="half-column">
+				<div class="form-group">
+					<select class="selectpicker show-tick form-control" ng-model="game.home.team" ng-change="loadTeamSquad(game.home.team,1)" data-live-search="true" required>
+						<option ng-repeat="team in seasonParticipants">{{team}}</option>
+					</select>
+					<input type="number" class="form-control number" ng-model="game.home.goals" required>
+				</div>
+			</div>
+			<div class="half-column">
+				<div class="form-group">
+					<input type="number" class="form-control number" ng-model="game.guest.goals" ng-value="game.guest.goals" required>
+					<select class="selectpicker show-tick form-control" ng-model="game.guest.team" data-live-search="true" required>
+						<option ng-repeat="team in seasonParticipants" ng-click="loadTeamSquad(team,0)">{{team}}</option>
+					</select>
+				</div>
+			</div>
+		</div>
+		<hr>
+		<div class="title"><b>Scorers</b> </div>
+		<div class="form-row">
+			<div class="half-column"> <!-- Home team scorers-->
+				<div  ng-repeat="goal in range(game.home.goals) track by $index">
+					<select class="selectpicker show-tick form-control" ng-model="game.home.scorers[$index]" data-live-search="true" required>
+						<option ng-repeat="player in homeTeamSquad">{{player.secondName}}</option>
+					</select>
+				</div>
+			</div>
+			<div class="half-column">
+				<div  ng-repeat="goal in range(game.guest.goals) track by $index">
+					<select class="selectpicker show-tick form-control" ng-model="game.guest.scorers[$index]" data-live-search="true" required>
+						<option ng-repeat="player in guestTeamSquad">{{player.secondName}}</option>
+					</select>
+				</div>
+			</div>
+		</div>
+		<hr>
+		<div class="title">
+			<input type="number" class="form-control number" ng-model="game.home.ycNum" required>
+			<b>Yellow cards</b>
+			<input type="number" class="form-control number" ng-model="game.guest.ycNum" required>
+		 </div>
+		<div class="form-row">
+			<div class="half-column">
+				<div  ng-repeat="goal in range(game.home.ycNum) track by $index">
+					<select class="selectpicker show-tick form-control" ng-model="game.home.ycOwners[$index]" data-live-search="true">
+						<option ng-repeat="player in homeTeamSquad">{{player.secondName}}</option>
+					</select>
+				</div>
+			</div>
+			<div class="half-column">
+				<div  ng-repeat="goal in range(game.guest.ycNum) track by $index">
+					<select class="selectpicker show-tick form-control" ng-model="game.guest.ycOwners[$index]" data-live-search="true">
+						<option ng-repeat="player in guestTeamSquad">{{player.secondName}}</option>
+					</select>
+				</div>
+			</div>
+		</div>
+		<hr>
+		<div class="title">
+			<input type="number" class="form-control number" ng-model="game.home.rcNum" required>
+			<b>Red cards</b>
+			<input type="number" class="form-control number" ng-model="game.guest.rcNum" required>
+		 </div>
+		<div class="form-row">
+			<div class="half-column">
+				<div  ng-repeat="goal in range(game.home.rcNum) track by $index">
+					<select class="selectpicker show-tick form-control" ng-model="game.home.rcOwners[$index]" data-live-search="true">
+						<option ng-repeat="player in homeTeamSquad">{{player.secondName}}</option>
+					</select>
+				</div>
+			</div>
+			<div class="half-column">
+				<div  ng-repeat="goal in range(game.guest.rcNum) track by $index">
+					<select class="selectpicker show-tick form-control" ng-model="game.guest.rcOwners[$index]" data-live-search="true">
+						<option ng-repeat="player in guestTeamSquad">{{player.secondName}}</option>
+					</select>
+				</div>
+			</div>
+		</div>
+		<hr>
+		<div class="title">
+			<input type="number" class="form-control number" ng-model="game.home.fouls" required>
+			<b>Fouls commited</b>
+			<input type="number" class="form-control number" ng-model="game.guest.fouls" required>
+		 </div>
+	</div> <!-- end protocol -->
+	<hr>
+	<button class="btn btn-success" type="submit" href="#">Submit</button>
+</form>

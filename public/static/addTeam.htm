@@ -1,0 +1,19 @@
+<h1> Add team</h1>
+<hr>
+<form class="form-inline" role="form" name="addTeamForm" ng-submit="addTeam(teamName)">
+	<div class="form-group teamOptionBox">
+		<!-- <label for="seasonCombo" class="pull-left">Apply to season:</label> -->
+		<div class="dropdown" id="seasonCombo">
+			<button class="btn btn-default dropdown-toggle" type="button" id="menu5" data-toggle="dropdown" required>{{currentSeason.name}}
+			<span class="caret"></span></button>
+			<ul class="dropdown-menu" role="menu" aria-labelledby="menu5">
+				<li role="presentation" ng-repeat="season in seasons" ng-click="setSeason(season)"><a role="menuitem" tabindex="-1" href="#">{{season.name}}</a></li>
+			</ul>
+		</div> <!-- dropdown -->
+	</div>
+	<div class="form-group teamOptionBox">
+		<label>Team name:</label>
+		<input type="text" class="form-control" ng-model="teamName" maxlength="15" placeholder="Enter team name" required/>
+	</div>
+	<button class="btn btn-success" type="submit" href="#">Add</button>
+</form>

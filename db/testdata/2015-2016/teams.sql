@@ -1,0 +1,10 @@
+INSERT INTO Teams(name,seasonId) VALUES("Оранта", (select id from Seasons where name="2015-2016"));
+INSERT INTO Teams(name,seasonId) VALUES("Друзья", (select id from Seasons where name="2015-2016"));
+INSERT INTO Teams(name,seasonId) VALUES("Ингул", (select id from Seasons where name="2015-2016"));
+INSERT INTO Teams(name,seasonId) VALUES("GlobalLogic", (select id from Seasons where name="2015-2016"));
+INSERT INTO Teams(name,seasonId) VALUES("Сандора", (select id from Seasons where name="2015-2016"));
+INSERT INTO Teams(name,seasonId) VALUES("United", (select id from Seasons where name="2015-2016"));
+INSERT INTO Teams(name,seasonId) VALUES("STATUS", (select id from Seasons where name="2015-2016"));
+INSERT INTO Teams(name,seasonId) VALUES("Широкий Лан", (select id from Seasons where name="2015-2016"));
+INSERT INTO Teams(name,seasonId) VALUES("Мото", (select id from Seasons where name="2015-2016"));
+INSERT INTO Teams(name,seasonId) VALUES("Вымпел", (select id from Seasons where name="2015-2016"));

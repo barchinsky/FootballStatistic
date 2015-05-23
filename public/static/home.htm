@@ -1,0 +1,18 @@
+<div class="jumbotron">
+	<h1>Hi, dude!</h1>
+	<p> It is just a demo version of service and we are working hard improving it.</p>
+	<p>In future You will be able to find here different information about Nikolaev Amateur Football League such as game statistic,schedule, game replays and much more...</p>
+</div>
+
+<div class="news bordered box" ng-repeat="article in newsList">
+	<div class="form-row">
+		<div class="half-column full-height">
+			<img ng-src="{{article.img}}" class="news-title-img shadowed-inset"/>
+		</div>
+		<div class="half-column full-height text-left">
+			<div class="news-date text-middle">{{article.date}}</div>
+			<h2>{{article.heading}}</h2>
+			<p>{{article.text}}</p>
+		</div>
+	</div>
+</div>

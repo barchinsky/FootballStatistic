@@ -1,0 +1,86 @@
+<form class="form-inline" role="form" name="addGameForm">
+	<div class="panel-heading">
+		<div class="dropdown pull-left">
+			<button class="btn btn-default dropdown-toggle" type="button" id="menu1" data-toggle="dropdown">{{currentSeason.name}}
+			<span class="caret"></span></button>
+			<ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
+				<li role="presentation" ng-repeat="season in seasons" ng-click="setSeason(season)"><a role="menuitem" tabindex="-1" href="#">{{season.name}}</a></li>
+			</ul>
+		</div> <!-- dropdown -->
+		<div class="margined-left">
+			<select class="selectpicker show-tick form-control team-name" ng-model="currentTeam"  data-live-search="true" required>
+				<option ng-repeat="team in seasonParticipants">{{team}}</option>
+			</select>
+		</div>
+	</div>
+	<hr>
+	<div class="protocol">
+		<span>Date: 2015-05-16</span>
+		<div class="form-row"> 
+		<br>Match statistic:<br>
+			<div class="half-column">
+				<div class="form-group">
+					<label>Home team</label>
+					<input type="text" class="form-control number" readonly>
+				</div>
+			</div>
+			<div class="half-column">
+				<div class="form-group">
+					<input type="text" class="form-control number" readonly>
+					<label >Guest team</label>
+				</div>
+			</div>
+		</div>
+		<hr>
+		<div class="title"><b>Scorers</b> </div>
+		<div class="form-row">
+			<div class="half-column"> <!-- Home team scorers-->
+				<div  ng-repeat="goal in range(game.home.scorers) track by $index">
+				</div>
+			</div>
+			<div class="half-column">
+				<div  ng-repeat="goal in range(game.guest.scorers) track by $index">
+				</div>
+			</div>
+		</div>
+		<hr>
+		<div class="title">
+			<input type="text" class="form-control number" ng-model="game.home.ycNum" readonly>
+			<b>Yellow cards</b>
+			<input type="text" class="form-control number" ng-model="game.guest.ycNum" readonly>
+		 </div>
+		<div class="form-row">
+			<div class="half-column">
+				<div  ng-repeat="goal in range(game.home.ycNum) track by $index">
+				</div>
+			</div>
+			<div class="half-column">
+				<div  ng-repeat="goal in range(game.guest.ycNum) track by $index">
+				</div>
+			</div>
+		</div>
+		<hr>
+		<div class="title">
+			<input type="text" class="form-control number" ng-model="game.home.rcNum" readonly>
+			<b>Red cards</b>
+			<input type="text" class="form-control number" ng-model="game.guest.rcNum" readonly>
+		 </div>
+		<div class="form-row">
+			<div class="half-column">
+				<div  ng-repeat="goal in range(game.home.rcNum) track by $index">
+				</div>
+			</div>
+			<div class="half-column">
+				<div  ng-repeat="goal in range(game.guest.rcNum) track by $index">
+				</div>
+			</div>
+		</div>
+		<hr>
+		<div class="title">
+			<input type="text" class="form-control number" ng-model="game.home.fouls" readonly>
+			<b>Fouls commited</b>
+			<input type="text" class="form-control number" ng-model="game.guest.fouls" readonly>
+		 </div>
+	</div> <!-- end protocol -->
+	<!-- <input type="button" class="btn btn-success pull-right" ng-click="getPlayersSeasonStat(currentTeam)" value = "Refresh"/> -->
+</form> <!-- panel-heading -->

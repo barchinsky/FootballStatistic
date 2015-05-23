@@ -1,0 +1,51 @@
+<h1>{{selectedTeam}} games in {{currentSeason.name}} season</h1>
+<div class="panel panel-default">
+	<!-- Table -->
+	<table class="table table-striped">
+		<thead>
+			<th class="text-centered">ID</th>
+			<th class="text-centered">Date</th>
+			<th class="text-centered">Home</th>
+			<th class="text-centered">Score</th>
+			<th class="text-centered">Guest</th>
+		</thead>
+		<tbody>
+			<tr class="text-centered" ng-repeat="game in teamGameStatistic track by $index">
+				<td>{{game.id}}</td><td ng-init="parseDate(game.gameDate,$index)">{{gmd[$index]}}</td><td>{{teamNameMap[ game.homeTeamId ]}}</td><td>{{game.homeTeamGoals}}-{{game.guestTeamGoals}}</td><td>{{teamNameMap[ game.guestTeamId ]}}</td><td><input type="button" class="btn btn-primary small-btn text-centered" value="Edit"/></td>
+			</tr>
+		</tbody>
+	</table>
+</div> <!-- panel panel-default -->
+<br>
+<form class="inline game-info bordered margined" role="form">
+	<div class="form-group pull-left margined">
+		<label>Home</label>
+		<input type="text" ng-model="eHome" class="form-control birthInput"/>
+		<label>Home goals</label>
+		<input type="number" ng-model="eHomeGoals" class="form-control number"/>
+	</div>
+	<div class="form-group pull-left">
+		<div  ng-repeat="goal in range(eHomeGoals) track by $index">
+			<select class="selectpicker show-tick form-control" data-live-search="true" required>
+				<option ng-repeat="player in homeTeamSquad">{{player.secondName}}</option>
+			</select>
+		</div>
+	</div>
+	<div class="form-group margined pull-left">
+		<label>Guest</label>
+		<input type="text" ng-model="eGuest" class="form-control birthInput"/>
+		<label>Guest goals</label>
+		<input type="text" ng-model="eGuestGoals" class="form-control number"/>
+	</div>
+	<div class="form-group pull-left">
+		<div  ng-repeat="goal in range(eHomeGoals) track by $index">
+			<select class="selectpicker show-tick form-control" data-live-search="true" required>
+				<option ng-repeat="player in guestTeamSquad">{{player.secondName}}</option>
+			</select>
+		</div>
+	</div>
+	<div class="form-group">
+		<label>Date</label>
+		<input type="text" ng-model="eGuest" class="form-control birthInput" readonly/>
+	</div>
+</form>
