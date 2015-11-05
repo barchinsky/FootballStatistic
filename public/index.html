@@ -27,7 +27,7 @@
 </head>
 <body ng-controller="seasonController">
 	<div class="container">
-		<div class="navbar navbar-inverse">
+		<div class="navbar navbar-inverse navbar-fixed-top">
 			<div class="container-fluid">
 				<div class="navbar-header">
 					<a class="navbar-brand" href="#" ng-click="route('static/home.htm')">Home</a>
@@ -49,6 +49,8 @@
 								<li ng-repeat="action in editActionItems" ng-click="route(action.url)"><a href="#">{{action.title}}</a></li>
 							</ul>
 						</li>
+						<li id="seasonSection"><a href="#" ng-click="go(true)">Back</a></li>
+						<li id="seasonSection"><a href="#" ng-click="go(false)">Forward</a></li>
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
 						<li id="loginSection" ng-click="route('static/login.htm')" ng-show="!isAuthorized">
@@ -62,11 +64,18 @@
 			</div>
 		</div> <!-- navbar navbar-inverse -->
 		<div class="alert alert-{{alertType}} notification" id="notification" role="alert">{{notificationText}}</div>
+		<br><br>
 		<div id="bodyContainer">
 			<div id="bodyTemplate" ng-include="currentPageUrl"></div>
+			<br>
 		</div>
+		<br><br>
 <!-- 		<input class="datepicker input-append date" ng-model="date"/>
 		<div ng-bind="date"></div> -->
+		<div class="navbar navbar-inverse navbar-fixed-bottom">
+			<p class="text-centered text-white"> &copy barchinsky, 2015, v0.1</p>
+		</div>
 	</div><!-- container -->
+	
 </body>
 </html>

@@ -1,0 +1,13 @@
+DROP TABLE IF EXISTS Cards;
+
+CREATE TABLE Cards(
+	id int NOT NULL AUTO_INCREMENT,
+	playerId int,
+	gameId int,
+	type int COMMENT ' 0 is yellow, 1 is red',
+	seasonId int,
+	CONSTRAINT FK_CARDS_PLAYERS FOREIGN KEY (playerId) REFERENCES Players (id),
+	CONSTRAINT FK_CARDS_GAMES FOREIGN KEY (gameId) REFERENCES Games (id),
+	CONSTRAINT FK_CARDS_SEASONS FOREIGN KEY (seasonId) REFERENCES Seasons(id),
+	PRIMARY KEY (id)
+);

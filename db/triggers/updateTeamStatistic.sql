@@ -13,10 +13,6 @@ CREATE TRIGGER updateTeamStatistic AFTER INSERT ON Games
 		update Teams as t SET t.goalsMissed=t.goalsMissed + NEW.guestTeamGoals where t.id = NEW.homeTeamId; -- count missed goals for home team
 		update Teams as t SET t.goalsMissed=t.goalsMissed + NEW.homeTeamGoals where t.id = NEW.guestTeamId; -- count missed goals for guest team
 
-		-- Update fouls
-		update Teams as t SET t.fouls=t.fouls + NEW.homeTeamFouls where t.id = NEW.homeTeamId; -- count home team fouls
-		update Teams as t SET t.fouls=t.fouls + NEW.guestTeamFouls where t.id = NEW.guestTeamId; -- count guest team fouls
-
 		-- Add team points
 		if NEW.homeTeamGoals > NEW.guestTeamGoals then
 			update Teams as t set t.points = t.points + 3 where t.id = NEW.homeTeamId and NEW.seasonId = t.seasonId;

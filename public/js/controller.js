@@ -1,24 +1,28 @@
 mainApp.controller("seasonController",function($scope,$http){
-	// $scope.seasons = ["2013-2014","2014-2015","2015-2016"];
 	console.log("controller");
-
-	// $("#notification").hide();
 
 	$scope.alerts=["success","info","warning","danger"]
 	$scope.alertType="warning";
 
-	var host="http://10.105.30.70:9800";
+	$scope.history = [];
+	$scope.historyIndex = 0;
 
-	$scope.isAdmin = true;
+	var host="http://192.168.0.107:9800";
+	console.log("controller host: "+host);
+
+	$scope.isAdmin = false;
 	$scope.isAuthorized = false;
 	$scope.isAsc = false;
 	$scope.currentUser = "";
+	$scope.isEdit = false; // game editing flag
 
 	$scope.currentPageUrl = 'static/home.htm';
-	$scope.addActionItems = [{title:"Team",url:"static/addTeam.htm"},{title:"Season",url:"static/addSeason.htm"},{title:"Game",url:"static/addGameProtocol.htm"},{title:"Players",url:"static/addPlayers.htm"}];
-	$scope.editActionItems = [{title:"Game",url:"static/404.htm"},{title:"Players",url:"static/404.htm"}];
-	$scope.seasonResultHeaders = ["#","Team","Games","Goals","GA","Fouls","Points"];
-	$scope.playerStatHeaders= [{title:"#",fieldName:""},{title:"First name",fieldName:"firstName"},{title:"Second name",fieldName:"secondName"},{title:"Goals",fieldName:"goals"},{title:"Assists",fieldName:"assists"},{title:"Efficiency(g+a)",fieldName:"efficiency"},{title:"Red cards",fieldName:"rCards"},{title:"Yellow cards",fieldName:"yCards"}]; // ,{title:"Birth",fieldName:"dateOfBirth"}
+	$scope.history.push($scope.currentPageUrl);
+
+	$scope.addActionItems = [{ title:"Team",url:"static/addTeam.htm" },{ title:"Season",url:"static/addSeason.htm" },{ title:"Game",url:"static/addGameProtocol.htm" },{ title:"Players",url:"static/addPlayers.htm" }];
+	$scope.editActionItems = [{ title:"Game",url:"static/404.htm" },{ title:"Players",url:"static/404.htm" }];
+	$scope.seasonResultHeaders = ["#","Team","Games","Scored","Missed","GA","Points"];
+	$scope.playerStatHeaders= [{ title:"#",fieldName:"" },{ title:"Second name",fieldName:"secondName" },{ title:"First name",fieldName:"firstName" },{ title:"Goals",fieldName:"goals" },{ title:"Red cards",fieldName:"red" },{ title:"Yellow cards",fieldName:"yellow" }];
 
 
 	$scope.arrowUp = "<img id='arrowUp' src='media/arrowUp.png'/>";
@@ -30,7 +34,7 @@ mainApp.controller("seasonController",function($scope,$http){
 	$scope.playersSeasonStatistic = []; // players statistic in season
 
 	// used in add team dialog
-	$scope.playersNumber = 1; // number of players in team
+	$scope.playersNumber = 0; // number of players in team
 	$scope.players=[{}]; // list of players to add to team
 	// end add team dialog vars
 
@@ -42,18 +46,20 @@ mainApp.controller("seasonController",function($scope,$http){
 	$scope.homeTeamSquad = [{}]; // squad of home team
 	$scope.guestTeamSquad = [{}]; // squad of guest team
 
-	$scope.seasonResults = []; // list of teamsresults in the season
+	$scope.homeScorers = 0;
+	$scope.guestScorers = 0;
+
+	$scope.seasonResults = []; // list of teams results in the season
 	$scope.teamGames = [{}]; // list of games for special team
 	$scope.teamSeasonHistory = [{}]; // array of game objects
 
 	$scope.selectedTeam = ""; // team name displayed in teamGameStatistic.htm
+	$scope.currentTeam = {}; // team selected in addPlayers.htm
 	$scope.notificationText = "";
-
-	// $scope.gameDate = ""; // ???????
 
 	$scope.newsList = [{date:"May 21, 2015 ",img:"media/news2.png",heading:"Next game this Saturday!",text:"We will play our next game against guys from Vympel! Come to support us, Globytes! Game will be held on Saturday, May 23, at 15-00 near central city stadium."},{date:"May 20, 2015",img:"media/start3.jpg",heading:"Hi, this is our first news!",text:"We will try to take you up to date info about all important GL team events!"}]
 
-
+	// TODO: Need refactoring
 	$scope.initGame = function(){
 		console.log("controller:initGame()");
 
@@ -62,21 +68,19 @@ mainApp.controller("seasonController",function($scope,$http){
 		$scope.game.home.goals = 0;
 		$scope.game.home.rcNum = 0;
 		$scope.game.home.ycNum = 0;
-		$scope.game.home.scorers = [];
-		$scope.game.home.ycOwners=[];
-		$scope.game.home.rcOwners=[];
+		$scope.game.home.scorers = [{}];
+		$scope.game.home.yc=[];
+		$scope.game.home.rc=[];
 		// $scope.game.home.id = -1;
-		$scope.game.home.fouls=0;
 		$scope.game.home.team = "";
 
 		$scope.game.guest.goals = 0;
 		$scope.game.guest.ycNum = 0;
 		$scope.game.guest.rcNum = 0;
-		$scope.game.guest.scorers = [];
-		$scope.game.guest.ycOwners=[];
-		$scope.game.guest.rcOwners = [];
+		$scope.game.guest.scorers = [{}];
+		$scope.game.guest.yc=[];
+		$scope.game.guest.rc = [];
 		$scope.game.guest.id = -1;
-		$scope.game.guest.fouls=0;
 		$scope.game.guest.team = "";
 
 		$scope.game.date = "";
@@ -93,19 +97,29 @@ mainApp.controller("seasonController",function($scope,$http){
 		$scope.currentSeason = season;
 
 		console.log("currentSeason "+$scope.currentSeason.name+$scope.currentSeason.id);
-		$scope.loadSeasonResults();
+		$scope.loadSeasonInfo();
 
 		console.log("~setSeason()");
 	}
 
+	$scope.resetSeason = function(){
+		$scope.currentSeason = {name:"Pick season"};
+	}
+
 	$scope.route = function(url,opt){
 		console.log("route()");
-		console.log("route"+url);
+		//console.log("route"+url + "opt:"+opt);
 
-		// $scope.resetData();
-		if(opt){ $scope.loadTeamGames(opt); }
+		if( url != "static/teamGameStatistic.htm") $scope.resetSeason();
+		$scope.resetData();
+
+		if(opt){ $scope.loadTeamGames(opt); } // load team season games result
 
 		$scope.currentPageUrl = url;
+
+		// add page to history
+		$scope.history.push($scope.currentPageUrl);
+		$scope.historyIndex = $scope.history.length -1;
 
 		console.log("~route()");
 	}
@@ -129,7 +143,7 @@ mainApp.controller("seasonController",function($scope,$http){
 				console.log("response"+response);
 				if(response["status"]=="1"){
 					$scope.notify("Team added successfuly!",0);
-					$scope.loadSeasonResults();
+					$scope.loadSeasonInfo();
 
 					$scope.resetData();
 					
@@ -143,19 +157,23 @@ mainApp.controller("seasonController",function($scope,$http){
 		console.log("~addTeam()");
 	}
 
-	$scope.addPlayers = function(teamName){
+	$scope.addPlayers = function(team){
 		console.log("addPlayers()");
+		console.log( typeof( JSON.parse(team)  ) );
 
-		console.log("team:"+teamName+" season:"+$scope.currentSeason.name);
+		$scope.currentTeam = JSON.parse(team);
 
-		for(i=0; i < $scope.players.length;i++){
-			// console.log("name:"+$scope.players[i].name+" SecondName:"+$scope.players[i].secondName+" phone:"+$scope.players[i].phone+" birthDate"+$scope.players[i].dateOfBirth);
-			if(!$scope.isValidDate($scope.players[i].dateOfBirth)) { $scope.notify("Invalid date of birth.",3); return; }
+		var team = JSON.parse(team);
+		var teamId = team.id;
+
+		console.log("teamId:"+teamId+" season:"+$scope.currentSeason.id+ " player[0]:"+$scope.players[0].name);
+
+		if( !$scope.players.length ){ // return if players does not exists
+			$scope.notify("Please, add players.", 3);
+			return;
 		}
 
-		if($scope.currentSeason.name=="Pick season" || teamName.length == 0){ $scope.notify("Invalid input data. Please pick season and team.",2); return; }
-
-		var teamId = $scope.teamIdMap[teamName];
+		if($scope.currentSeason.name=="Pick season" ){ $scope.notify("Invalid input data. Please pick season and team.",2); return; }
 
 		$http.post(host+"/addPlayers",{teamId:teamId,seasonId:$scope.currentSeason.id,players:$scope.players}).success(function(response){
 			console.log("response"+response);
@@ -174,31 +192,23 @@ mainApp.controller("seasonController",function($scope,$http){
 		console.log("~addPlayers()");
 	}
 
-	$scope.addGame = function(){
+	$scope.addGame = function(game){
 		console.log("addGame()");
 
+		console.log(game.home.scorers, game.home.yc, game.guest.scorers, game.guest.yc, game.home.id, game.guest.id);
+		//return;
 		// input data validation
 		if($scope.currentSeason.name=="Pick season"){ $scope.notify("Please, select season.",2); return;}
-		if(!$scope.isValidDate($scope.game.date)){ $scope.notify("Invalid date format! Should be 'yyyy-mm-dd'. Please fix and try again",3); return;}
-		if(!$scope.game.home.team){ $scope.notify("Please select home team.",2); return; }
-		if(!$scope.game.guest.team){ $scope.notify("Please select guest team.",2); return; }
-		if($scope.game.home.team == $scope.game.guest.team) { $scope.notify("Team can't play agains themselves!",2); return; }
+		if(!$scope.isValidDate($scope.game.date)){ $scope.notify("Invalid date format! Should be 'yyyy/mm/dd'. Please fix and try again",3); return;}
+		if(!game.home.id){ $scope.notify("Please select home team.",2); return; }
+		if(!game.guest.id){ $scope.notify("Please select guest team.",2); return; }
+		if(game.home.id == game.guest.id) { $scope.notify("Team can't play agains themselves!",2); return; }
 
-		console.log("game.date"+$scope.game.date);
+		console.log("game.date"+game.date);
 		
-		$scope.game.season=$scope.currentSeason.id;
-		// console.log($scope.currentSeason,"season:"+$scope.game.season);
+		game.seasonId=$scope.currentSeason.id;
 
-		$scope.game.home.id = $scope.teamIdMap[$scope.game.home.team];
-		$scope.game.guest.id = $scope.teamIdMap[$scope.game.guest.team];
-
-		// console.log("$scope.game.home.id"+$scope.game.home.id+" "+$scope.game.home.team);
-		// console.log("$scope.game.guest.id"+$scope.game.guest.id+" "+$scope.game.guest.team);
-		// console.log("game:"+$scope.game);
-
-		// return;
-
-		$http.post(host+"/addGame",{game:$scope.game}).success(function(response){
+		$http.post(host+"/addGame",{game:game}).success(function(response){
 			console.log("controller:addGame()::response",response);
 
 			if(response["status"]=="1"){
@@ -209,9 +219,23 @@ mainApp.controller("seasonController",function($scope,$http){
 
 		$scope.initGame();
 
-		$scope.loadSeasonResults();
+		$scope.loadSeasonInfo();
 
 		console.log("~addGame()");
+	}
+
+	$scope.deleteGame = function(gameId){
+
+		$http.post("/deleteGame", {id:gameId}).success( function(response){
+			if(response["status"] == "1"){
+
+				$scope.notify("Game deleted successfuly.",0);
+			}
+			else{
+				$scope.notify("Game delete failed.",2);
+				console.log(response["status"]);
+			}
+		});
 	}
 
 	$scope.addSeason = function(seasonName){
@@ -237,8 +261,8 @@ mainApp.controller("seasonController",function($scope,$http){
 		console.log("~controller:addSeason()");
 	}
 
-	$scope.loadSeasonResults = function(){
-		console.log("loadSeasonResults()");
+	$scope.loadSeasonInfo = function(){ // load teams season results
+		console.log("loadSeasonInfo()");
 
 		$http.post(host+"/seasonResults",{seasonId:$scope.currentSeason.id}).success(function(data){
 			// $scope.processResponse(data);
@@ -248,26 +272,27 @@ mainApp.controller("seasonController",function($scope,$http){
 
 			console.log($scope.seasonResults);
 			// console.log("$scope.seasonResults.length"+$scope.seasonResults['data'].length);
-			for(i = 0; i < $scope.seasonResults.length;i++)
+			for( i = 0; i < $scope.seasonResults.length; i++ )
 			{
-				var team = $scope.seasonResults[i]['Team'];
-				var teamId = $scope.seasonResults[i]["TeamId"];
+				var team = {};
+				team.name = $scope.seasonResults[i]['Team'];
+				team.id = $scope.seasonResults[i]["TeamId"];
 				// console.log($scope.seasonResults[i].fouls);
-				$scope.teamIdMap[team] = teamId;
-				$scope.teamNameMap[teamId] = team;
-				// console.log(team);
+				//$scope.teamIdMap[team] = teamId;
+				//$scope.teamNameMap[teamId] = team;
+				console.log(team);
 				$scope.seasonParticipants.push(team);
 			}
 
-			console.log("loadSeasonResults::$scope.seasonParticipants:"+$scope.seasonParticipants);
+			console.log("loadSeasonInfo::$scope.seasonParticipants:"+$scope.seasonParticipants);
 
 		});
 
-		console.log("~controller::loadSeasonResults()");
+		console.log("~controller::loadSeasonInfo()");
 	}
 
-	$scope.loadTeamSquad = function(teamName, storage){
-		// storage - var that specify either home or guest teams squad
+	$scope.loadTeamSquad = function(teamId, isHome){
+		// isHome - var that specify either home or guest teams squad
 		// 1 - home team squad
 		// 0 - guest team squad
 		console.log("loadTeamSquad()");
@@ -275,11 +300,11 @@ mainApp.controller("seasonController",function($scope,$http){
 		// console.log("guestGoals",$scope.guestGoals);
 
 
-		console.log("loadTeamSquad::teamName:"+teamName+" storage:"+ storage);
+		console.log("loadTeamSquad::teamId:"+teamId+" isHome:"+ isHome);
 
-		$http.post(host+"/loadTeamSquad",{team:teamName}).success(function(response){
+		$http.post(host+"/loadTeamSquad",{teamId:teamId}).success(function(response){
 			// console.log("response:",response);
-			if(storage){
+			if(isHome){
 				$scope.homeTeamSquad = response["data"];
 				// console.log("$scope.homeTeamSquad:"+$scope.homeTeamSquad);
 			}
@@ -298,14 +323,15 @@ mainApp.controller("seasonController",function($scope,$http){
 		console.log("controller::loadTeamGames()");
 
 		// $scope.teamGameStatistic = [{gameDate:"2015-02-30",home:{team:"Real Madrid FC",goals:"2"},guest:{team:"Barcelona FC",goals:"1"}},{gameDate:"2015-05-10",home:{team:"Real Madrid FC",goals:"2"},guest:{team:"Atletic FC",goals:"2"}},{gameDate:"2015-03-25",home:{team:"Real Madrid FC",goals:"3"},guest:{team:"Sevilia FC",goals:"1"}}]
+		console.log("team"+team);
 
-		$scope.selectedTeam = team;
+		$scope.selectedTeam = team.Team;
 
-		console.log("teamID="+$scope.teamIdMap[team]+" team:"+team+" teamIdMap"+$scope.teamIdMap);
+		console.log("teamID="+team.TeamId+" team:"+team.Team);
 
-		$http.post(host+"/teamGames",{teamId:$scope.teamIdMap[team],seasonId:$scope.currentSeason.id}).success(function(data){
+		$http.post(host+"/teamGames",{teamId:team.TeamId,seasonId:$scope.currentSeason.id}).success(function(data){
 			console.log("controller::loadTeamGames():data:"+data["data"]);
-			$scope.teamGameStatistic = data["data"];
+			$scope.teamGames = data["data"];
 		});
 
 
@@ -318,7 +344,7 @@ mainApp.controller("seasonController",function($scope,$http){
 
 		$http.post(host+"/getSeasons").success(function(response){
 			$scope.seasons = response["data"];
-			// console.log("getSeasons::$scope.seasons"+$scope.seasons);
+			// /console.log("getSeasons::$scope.seasons"+$scope.seasons);
 		});
 
 		console.log("~getSeasons()");
@@ -342,7 +368,7 @@ mainApp.controller("seasonController",function($scope,$http){
 	$scope.getSeasons();
 	$scope.currentSeason  = {};
 	$scope.currentSeason.name = "Pick season";
-	$scope.initGame();
+	///$scope.initGame();
 
 
 	// ****************************** UTILS *************************************//
@@ -359,9 +385,9 @@ mainApp.controller("seasonController",function($scope,$http){
 	$scope.login = function(user,pass){
 		console.log("controller:login()");
 
-		if(user=="admin" && pass=="nimda"){
+		if(user=="admin" && pass=="admin"){
 			$scope.isAdmin=true;
-			$scope.route("home.htm");
+			$scope.route("static/home.htm");
 			$scope.isAuthorized = true;
 			$scope.currentUser = user;
 		}
@@ -386,27 +412,28 @@ mainApp.controller("seasonController",function($scope,$http){
 		console.log("controller::resetData()");
 
 		$scope.playersSeasonStatistic = [];
-		// $scope.currentTeam = "";
-		// $scope.teamName = "";
-		// $scope.addTeamInputValue = "";
+		$scope.currentTeam = {name:"", id:0};
 		$scope.players=[{}]; // list of players to add to team
-		// $scope.seasonResults = [];/
+		$scope.seasonResults = [];
+		$scope.seasonParticipants = [];
 		$scope.initGame();
+		$scope.homeScorers = 0;
+		$scope.guestScorers = 0;
+
 
 		console.log("~controller::resetData()");
 	}
 
-		$scope.sort = function(fieldName,list){
+	$scope.sort = function(fieldName,list){
 		console.log("controller::sort()");
+
+		console.log("list.before:"+list);
 
 		$scope.displayOrder(fieldName);
 
 		console.log("field:"+fieldName);
-		// console.log("event.targer"+$event.target);
 
-		// var sortedList = [];
 		//sort
-
 		if(list.length > 0){
 			console.log("Table not empty");
 			if($scope.isAsc){ // ascending sort
@@ -415,6 +442,7 @@ mainApp.controller("seasonController",function($scope,$http){
 				list=list.sort( function(a,b){
 					// sort descending by fieldName
 					// console.log("fieldName"+fieldName);
+					console.log(a,b);
 
 					if( a[ fieldName ] > b[ fieldName ] ){
 						return 1;
@@ -447,7 +475,9 @@ mainApp.controller("seasonController",function($scope,$http){
 		// list = sortedList;
 		// clearTable();
 		// updateTable();
-		console.log("$scope.seasonResults",$scope.seasonResults,$scope.seasonResults.length);
+		//console.log("$scope.seasonResults",$scope.seasonResults,$scope.seasonResults.length);
+
+		console.log("list.after:"+list);
 
 
 		console.log("~controller::sort()");
@@ -475,29 +505,53 @@ mainApp.controller("seasonController",function($scope,$http){
 		// console.log("item:"+item);
 
 		var date = new Date(unformatedDate);
-		var formattedDate = date.getDate() + "/" + (date.getMonth()+1) + "/" + date.getFullYear();
-		console.log(formattedDate)  //prints 26/4/2002
+		var formattedDate = date.getFullYear() + "/" + (date.getMonth()+1) + "/" + date.getDate();
+		console.log(formattedDate)  //prints 2002/11-21
 		$scope.gmd[index] = formattedDate;
-
-
-
-		// return "2";
 	}
 
-	$scope.isValidDate = function(str){
+	$scope.formatDate = function(unformatedDate){
+		var date = new Date(unformatedDate);
+		var formattedDate = date.getFullYear() + "/" + (date.getMonth()+1) + "/" + date.getDate();
+
+		return formattedDate;
+	}
+
+	$scope.isValidDate = function(dateString){
 		console.log("controller.isValidDate()");
 
-		var d = new Date(str);
+		console.log("controller.isValidDate.date: "+ dateString)
 
-		if(d=="Invalid Date"){
-			console.log("Invalid date.");
+		if(dateString === undefined){ // if date is not set 
+			dateString = "1970/01/01"; // define default value
+		}
+
+		 // First check for the pattern
+		if(!/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(dateString))
 			return false;
-		}
-		else{
-			console.log(d.toLocaleString());
-			return true;
-		}
 
+		// Parse the date parts to integers
+		var parts = dateString.split("/");
+		var day = parseInt(parts[2], 10);
+		var month = parseInt(parts[1], 10);
+		var year = parseInt(parts[0], 10);
+
+		console.log(year,month,day);
+
+		// Check the ranges of month and year
+		if(year < 1000 || year > 3000 || month == 0 || month > 12)
+			return false;
+
+		var monthLength = [ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ];
+
+		// Adjust for leap years
+		if(year % 400 == 0 || (year % 100 != 0 && year % 4 == 0))
+			monthLength[1] = 29;
+
+		// Check the range of the day
+		console.log(day > 0 && day <= monthLength[month - 1]);
+		return day > 0 && day <= monthLength[month - 1];
+		
 		console.log("~controller.isValidDate()");
 	}
 
@@ -516,4 +570,71 @@ mainApp.controller("seasonController",function($scope,$http){
 
 		console.log("~controller.notify()");
 	}
+
+	$scope.addScorers = function(type){
+		console.log("$scope.addScorers()");
+
+		if(type){ // homeScorers
+			$scope.homeScorers += 1;
+			return;
+		}
+
+		$scope.guestScorers += 1;
+
+
+		console.log("$scope.~addScorers()");
+	}
+
+	$scope.removeScorers = function(type){
+		console.log("$scope.removeScorers()");
+
+		console.log("type:"+type + " $scope.homeScorers:"+$scope.homeScorers + " $scope.guestScorers:"+$scope.guestScorers);
+
+		
+		if(type){ // homeScorers
+			if( !$scope.homeScorers ) return;
+			$scope.homeScorers -= 1;
+			return;
+		}
+
+		if ( !$scope.guestScorers ) return;
+		$scope.guestScorers -= 1;
+
+		console.log("type:"+type + " $scope.homeScorers:"+$scope.homeScorers + " $scope.guestScorers:"+$scope.guestScorers);
+
+
+		console.log("$scope.~removeScorers()");
+	}
+
+	$scope.go = function(back){
+		console.log("$scope.go()");
+
+		console.log($scope.history);
+		console.log("historyIndex:"+$scope.historyIndex);
+
+		if(back) {
+			if( !$scope.historyIndex ) return;
+			$scope.historyIndex -= 1;
+		}
+		else{
+			if ( $scope.historyIndex == $scope.history.length -1) return;
+			$scope.historyIndex += 1;
+		}
+
+		console.log("historyIndex:"+$scope.historyIndex);
+
+		$scope.currentPageUrl = $scope.history[$scope.historyIndex]
+
+	}
+
+	$scope.formatedName = function(player){
+		return player.secondName + " " + player.firstName;
+	}
+
+	$scope.getGA = function(scored, missed){
+		console.log("getGA"+scored+missed);
+		return Number.parseInt(scored) - Number.parseInt(missed);
+	}
+
+
 });

@@ -12,7 +12,7 @@
 		</div> <!-- dropdown -->
 		<div class="margined-left">
 			<select class="selectpicker show-tick form-control team-name" ng-model="currentTeam" ng-change="getPlayersSeasonStat(currentTeam)" data-live-search="true" required>
-				<option ng-repeat="team in seasonParticipants">{{team}}</option>
+				<option ng-repeat="team in seasonParticipants">{{team.name}}</option>
 			</select>
 			<!-- <span>{{currentTeam}}</span> -->
 		</div>
@@ -22,20 +22,15 @@
 	<table class="table table-striped">
 		<thead>
 			<th class="text-centered" ng-repeat="header in playerStatHeaders track by $index" id="{{header.fieldName}}" ng-click="sort(header.fieldName,playersSeasonStatistic)">{{header.title}}</th>
-<!-- 			<th class="text-centered">#</th>
-			<th class="text-centered">Name</th>
-			<th class="text-centered">Second Name</th>
-			<th class="text-centered">Date of birth</th>
-			<th class="text-centered">Team</th>
-			<th class="text-centered">Goals</th>
-			<th class="text-centered">Asissts</th>
-			<th class="text-centered">Red Cards</th>
-			<th class="text-centered">Yellow Cards</th> -->
-			<!-- <th class="text-centered">Games played</th> -->
 		</thead>
 		<tbody>
 			<tr ng-repeat="player in playersSeasonStatistic track by $index" class="text-centered">
-				<td>{{$index+1}}</td><td>{{player.firstName}}</td><td>{{player.secondName}}</td><!-- <td>{{player.team}}</td> --><td>{{player.goals}}</td><td>{{player.assists}}</td><td>{{player.efficiency}}</td><td>{{player.rCards}}</td><td>{{player.yCards}}</td><!-- <td ng-if="isAdmin">{{player.dateOfBirth}}</td><td class="na" ng-if="!isAdmin">N/A</td> --><!-- <td>{{player.gamesPlayed}}</td> -->
+				<td >{{$index+1}}</td>
+				<td>{{player.secondName}}</td>
+				<td>{{player.firstName}}</td>
+				<td>{{player.goals}}</td>
+				<td>{{player.red}}</td>
+				<td>{{player.yellow}}</td>
 			</tr>
 			
 		</tbody>

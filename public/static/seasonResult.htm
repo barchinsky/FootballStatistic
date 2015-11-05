@@ -17,18 +17,17 @@
 	<!-- Table -->
 	<table class="table table-striped">
 		<thead >
-			<th ng-repeat="item in seasonResultHeaders track by $index" class="text-centered" ng-click="sort(item,seasonResults)" id="{{item}}">{{item}}</th>
-<!-- 			<th class="text-centered">#</th>
-			<th class="text-centered" ng-click="sort('Team')">Team</th>
-			<th class="text-centered" ng-click="sort('Games')">Games</th>
-			<th class="text-centered" ng-click="sort('Goals')">Goals</th>
-			<th class="text-centered" ng-click="sort('Goals Missed')">Goals missed</th>
-			<th class="text-centered" ng-click="sort('fouls')">Fouls</th>
-			<th class="text-centered" ng-click="sort('Points')">Points</th> -->
+			<th ng-repeat="item in seasonResultHeaders track by $index" class="text-centered" ng-click="sort(item,seasonResults)" id="{{item}}">{{ item}}</th>
 		</thead>
 		<tbody>
 			<tr ng-repeat="team in seasonResults track by $index" class="text-centered">
-				<td class="nonclickable">{{$index+1}}</td><td  class="clickable" ng-dblclick="route('static/teamGameStatistic.htm',team.Team)">{{team.Team}}</td><td class="nonclickable">{{team.Games}}</td><!-- <td>{{team["Total games"]}}</td> --><td>{{team.Goals}}</td><td>{{team["GA"]}}</td><td>{{team.fouls}}</td><td>{{team.Points}}</td>
+				<td>{{$index+1}}</td>
+				<td  class="clickable" ng-dblclick="route('static/teamGameStatistic.htm',team)">{{ team.Team }}</td>
+				<td>{{ team.Games }}</td>
+				<td>{{ team.Goals }}</td>
+				<td>{{ team.GA }}</td>
+				<td> {{ getGA(team.Goals, team.GA) }} </td>
+				<td>{{ team.Points }}</td>
 			</tr>
 			
 		</tbody>

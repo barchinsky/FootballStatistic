@@ -10,12 +10,21 @@ echo "Creating tables..."
 
 ./db.sh < "Seasons.sql"
 echo "Seasons.sql finished."
+
 ./db.sh < "Teams.sql"
 echo "Teams.sql finished."
+
 ./db.sh < "Players.sql"
 echo "Players.sql finished."
+
 ./db.sh < "Games.sql"
 echo "Games.sql finished."
+
+./db.sh < "Goals.sql"
+echo "Goals.sql finished"
+
+./db.sh < "Cards.sql"
+echo "Cards.sql finished"
 
 echo "Tables created."
 

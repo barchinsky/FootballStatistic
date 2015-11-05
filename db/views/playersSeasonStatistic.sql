@@ -1,7 +1,20 @@
-drop view if exists playersSeasonStatistic;
+DROP VIEW IF EXISTS playersSeasonStatistic;
 
 create view playersSeasonStatistic as(
-	select p.firstName,p.secondName,DATE_FORMAT(p.dateOfBirth,"%Y/%m/%e") as dateOfBirth, t.name as team, p.goals, p.assists, p.goals+p.assists as "efficiency", p.rCards, p.yCards, p.gamesPlayed, p.seasonId, p.teamId,s.name from Players as p 
-	left join Teams as t on t.id=p.teamId
-	left join Seasons as s on s.id = p.seasonId
+	select \
+		p.firstName,\
+		p.secondName,\
+		t.name as team,\
+		( select sum(goalNumber) from Goals g \
+			where ( g.playerId = p.id and g.seasonId=s.id) ) as goals,\
+		( select count(*) from Cards c \
+			where ( c.playerId = p.id and c.type = '1' and c.seasonId = s.id ) ) as red,\
+		( select count(*) from Cards c \
+			where ( c.playerId = p.id and c.type = '0' and c.seasonId = s.id ) ) as yellow,\
+		s.id as seasonId,\
+		p.teamId as teamId,\
+		s.name as season \
+	from Players as p \
+	left join Teams t on t.id=p.teamId \
+	left join Seasons s on s.id = p.seasonId
 );

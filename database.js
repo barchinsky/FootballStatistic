@@ -8,7 +8,7 @@ connection = function(){
 		host:"localhost",
 		user:"root",
 		password:"welcome1",
-		database:"FootballStatistic"
+		database:"FootballStatisticProd"
 	});
 
 	return connection;
@@ -63,17 +63,17 @@ loadSeasonResults = function(seasonId,response,callback){
 	// Query data from dataabase
 
 	var sql = 'select * from seasonResults as sr where SeasonId="'+ seasonId +'";';
-	console.log("database::loadSeasonResults()::sql"+sql);
+	console.log("database::loadSeasonResults()::sql "+sql);
 
 	executeSql(sql,response,callback);
 
 	console.log("~database.loadSeasonResults()");
 }
 
-loadTeamSquad = function(teamName,response,callback){
+loadTeamSquad = function(teamId,response,callback){
 	console.log("database:loadTeamSquad()");
 
-	var sql = 'select secondName from Players as p where p.teamId=(select id from Teams as t where t.name="'+teamName+'")';
+	var sql = 'select id,secondName,firstName from Players p where p.teamId="'+teamId+'";';
 
 	executeSql(sql,response,callback);
 
@@ -104,24 +104,9 @@ findTemplate = function(template,response,callback){
 }
 
 insertGame = function(game,response,callback){
-	console.log("insertGame()");
-	// game.home.team;
-	// game.home.goals;
-	// game.home.ycNum;
-	// game.home.rcNum;
-	// game.home.scorers;
-	// game.home.rcOwners;
-	// game.home.ycOwners;
+	console.log("database:insertGame()");
 
-	// game.guest.team;
-	// game.guest.goals;
-	// game.guest.ycNum;
-	// game.guest.rcNum;
-	// game.guest.scorers;
-	// game.guest.rcOwners;
-	// game.guest.ycOwners;
-
-	addGameSql = "insert into Games(homeTeamId,guestTeamId,homeTeamGoals,guestTeamGoals,homeTeamYC,guestTeamYC,homeTeamRC,guestTeamRC,homeTeamFouls,guestTeamFouls,homeTeamScorers,guestTeamScorers,gameDate,seasonId) values \
+	addGameSql = "insert into Games(homeTeamId, guestTeamId, homeTeamGoals, guestTeamGoals, homeTeamYC, guestTeamYC, homeTeamRC, guestTeamRC, gameDate, seasonId) values \
 	( \
 		"+game.home.id+", \
 		"+game.guest.id+", \
@@ -131,80 +116,83 @@ insertGame = function(game,response,callback){
 		"+game.guest.ycNum+", \
 		"+game.home.rcNum+", \
 		"+game.guest.rcNum+", \
-		"+game.home.fouls+", \
-		"+game.guest.fouls+", \
-		'"+game.home.scorers.join()+"',\
-		'"+game.guest.scorers.join()+"',\
 		'"+game.date+"',\
-		"+game.season+");";
+		"+game.seasonId+");";
 
 	executeSql(addGameSql,response,callback);
 
-	console.log("addGameSql:"+addGameSql);
+	console.log("insertGame: addGameSql:"+addGameSql);
 
-	console.log("~insertGame()");
+	console.log("~database:insertGame()");
 }
 
-updatePlayerStatistic = function(season,homeTeamInfo,guestTeamInfo){
+updatePlayerStatistic = function(seasonId, home, guest){
 	console.log("updatePlayerStatistic()");
 	var response = {};
 
-	var homeTeamId = homeTeamInfo.id;
-	var homeScorers = homeTeamInfo.scorers;
-	var homeTeamYCOwners = homeTeamInfo.ycOwners;
-	var homeTeamRCOwners = homeTeamInfo.rcOwners;
+	var homeTeamId = home.id;
+	var homeScorers = home.scorers; // [{"name":"Petrov", "goals":10}]
+	var homeYC = home.yc; // yellow card owners ids
+	var homeRC = home.rc; // red card owners ids
 
-	var guestTeamId = guestTeamInfo.id;
-	var guestScorers = guestTeamInfo.scorers;
-	var guestTeamYCOwners = guestTeamInfo.ycOwners;
-	var guestTeamRCOwners = guestTeamInfo.rcOwners;
+	var guestTeamId = guest.id;
+	var guestScorers = guest.scorers;
+	var guestYC = guest.yc; // yellow card owners ids
+	var guestRC = guest.rc; // red card owners ids
 
-	console.log(homeTeamId,homeScorers,homeTeamYCOwners,homeTeamRCOwners,guestTeamId,guestScorers,guestTeamYCOwners,guestTeamRCOwners);
+	console.log(homeTeamId,homeScorers,homeYC,homeRC,guestTeamId,guestScorers,guestYC,guestRC);
 
 	// update goals
 	for(i=0; i < homeScorers.length;i++){
-		sql = "UPDATE Players as p SET p.goals=p.goals+"+1+" where p.secondName='"+homeScorers[i]+"' and p.teamId='"+homeTeamId+"' and p.seasonId='"+season+"';"
+		//sql = "UPDATE Players as p SET p.goals=p.goals+"+1+" where p.secondName='"+homeScorers[i]+"' and p.teamId='"+homeTeamId+"' and p.seasonId='"+season+"';"
+		sql = "INSERT INTO Goals(gameId,playerId,goalNumber,seasonId) VALUES("+ "(select max(id) from Games)"+","+ home.scorers[i].id + ","+ home.scorers[i].goals + "," +seasonId + ")";
 		executeSql(sql,response,function(response,data){
 			console.log("updatePlayerStatistic()::update data:"+data);
 		});
 	}
 
 	for(i=0; i < guestScorers.length;i++){
-		sql = "UPDATE Players as p SET p.goals=p.goals+"+1+" where p.secondName='"+guestScorers[i]+"' and p.teamId='"+guestTeamId+"' and p.seasonId='"+season+"';"
+		sql = "INSERT INTO Goals(gameId,playerId,goalNumber,seasonId) VALUES("+ "(select max(id) from Games)" +","+ guest.scorers[i].id + ","+ guest.scorers[i].goals + "," +seasonId + ")";
 		executeSql(sql,response,function(response,data){
 			console.log("updatePlayerStatistic()::update data:"+data);
 		});
 	}
 
+	
 	// update yc
-	for(i=0; i < homeTeamYCOwners.length;i++){
-		sql = "UPDATE Players as p SET p.yCards=p.yCards+"+1+" where p.secondName='"+homeTeamYCOwners[i]+"' and p.teamId='"+homeTeamId+"' and p.seasonId='"+season+"';"
+	for(i=0; i < homeYC.length;i++){
+		//sql = "UPDATE Players as p SET p.yCards=p.yCards+"+1+" where p.secondName='"+homeYCOwners[i]+"' and p.teamId='"+homeTeamId+"' and p.seasonId='"+season+"';"
+		sql = "INSERT INTO Cards( playerId, gameId, type, seasonId ) VALUES("+homeYC[i] + "," + "(select max(id) from Games)" + "," + "0,"  +seasonId +")";
 		executeSql(sql,response,function(response,data){
 			console.log("updatePlayerStatistic()::update data:"+data);
 		});
 	}
 
-	for(i=0; i < guestTeamYCOwners.length;i++){
-		sql = "UPDATE Players as p SET p.yCards=p.yCards+"+1+" where p.secondName='"+guestTeamYCOwners[i]+"' and p.teamId='"+guestTeamId+"' and p.seasonId='"+season+"';"
+	for(i=0; i < guestYC.length;i++){
+		//sql = "UPDATE Players as p SET p.yCards=p.yCards+"+1+" where p.secondName='"+guestYC[i]+"' and p.teamId='"+guestTeamId+"' and p.seasonId='"+season+"';"
+		sql = "INSERT INTO Cards( playerId, gameId, type, seasonId ) VALUES("+guestYC[i] + "," + "(select max(id) from Games)" + "," + "0," +seasonId +" )";
 		executeSql(sql,response,function(response,data){
 			console.log("updatePlayerStatistic()::update data:"+data);
 		});
 	}
-
+	
 	// update rc
-	for(i=0; i < homeTeamRCOwners.length;i++){
-		sql = "UPDATE Players as p SET p.rCards=p.rCards+"+1+" where p.secondName='"+homeTeamRCOwners[i]+"' and p.teamId='"+homeTeamId+"' and p.seasonId='"+season+"';"
+	for(i=0; i < homeYC.length;i++){
+		//sql = "UPDATE Players as p SET p.yCards=p.yCards+"+1+" where p.secondName='"+homeYCOwners[i]+"' and p.teamId='"+homeTeamId+"' and p.seasonId='"+season+"';"
+		sql = "INSERT INTO Cards( playerId, gameId, type, seasonId ) VALUES("+homeRC[i] + "," + "(select max(id) from Games)" + "," + "1," +seasonId +" )";
 		executeSql(sql,response,function(response,data){
 			console.log("updatePlayerStatistic()::update data:"+data);
 		});
 	}
 
-	for(i=0; i < guestTeamRCOwners.length;i++){
-		sql = "UPDATE Players as p SET p.rCards=p.rCards+"+1+" where p.secondName='"+guestTeamRCOwners[i]+"' and p.teamId='"+guestTeamId+"' and p.seasonId='"+season+"';"
+	for(i=0; i < guestYC.length;i++){
+		//sql = "UPDATE Players as p SET p.yCards=p.yCards+"+1+" where p.secondName='"+guestYC[i]+"' and p.teamId='"+guestTeamId+"' and p.seasonId='"+season+"';"
+		sql = "INSERT INTO Cards( playerId, gameId, type, seasonId ) VALUES("+guestRC[i] + "," + "(select max(id) from Games)" + "," + "1," + seasonId  + " )";
 		executeSql(sql,response,function(response,data){
 			console.log("updatePlayerStatistic()::update data:"+data);
 		});
 	}
+	
 
 	// callback(response,{"data":[],"status":"1"});
 
@@ -212,9 +200,13 @@ updatePlayerStatistic = function(season,homeTeamInfo,guestTeamInfo){
 }
 
 getSeasons = function(response,callback){
+	console.log("getSeasons()");
+
 	var sql = "select name,id from Seasons";
 
 	executeSql(sql,response,callback);
+
+	console.log("~getSeasons()");
 }
 
 getPlayersSeasonStat = function(seasonId,team,response,callback){

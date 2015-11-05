@@ -1,4 +1,11 @@
 <h1>{{selectedTeam}} games in {{currentSeason.name}} season</h1>
+<div class="dropdown pull-left" >
+			<button class="btn btn-default dropdown-toggle" type="button" id="menu1" data-toggle="dropdown">{{currentSeason.name}}
+			<span class="caret"></span></button>
+			<ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
+				<li role="presentation" ng-repeat="season in seasons" ng-click="setSeason(season)"><a role="menuitem" tabindex="-1" href="#">{{season.name}}</a></li>
+			</ul>
+		</div> <!-- dropdown -->
 <div class="panel panel-default">
 	<!-- Table -->
 	<table class="table table-striped">
@@ -10,42 +17,10 @@
 			<th class="text-centered">Guest</th>
 		</thead>
 		<tbody>
-			<tr class="text-centered" ng-repeat="game in teamGameStatistic track by $index">
-				<td>{{game.id}}</td><td ng-init="parseDate(game.gameDate,$index)">{{gmd[$index]}}</td><td>{{teamNameMap[ game.homeTeamId ]}}</td><td>{{game.homeTeamGoals}}-{{game.guestTeamGoals}}</td><td>{{teamNameMap[ game.guestTeamId ]}}</td><td><input type="button" class="btn btn-primary small-btn text-centered" value="Edit"/></td>
+			<tr class="text-centered" ng-repeat="game in teamGames track by $index">
+				<td>{{game.id}}</td><td ng-init="parseDate(game.date,$index)">{{gmd[$index]}}</td><td>{{ game.home }}</td><td>{{game.homeGoals}}-{{game.guestGoals}}</td><td>{{ game.guest }}</td><td><input type="button" class="btn btn-danger small-btn text-centered" value="Delete" ng-click="deleteGame(game.id)" ng-show="isAdmin"/></td>
 			</tr>
 		</tbody>
 	</table>
 </div> <!-- panel panel-default -->
 <br>
-<form class="inline game-info bordered margined" role="form">
-	<div class="form-group pull-left margined">
-		<label>Home</label>
-		<input type="text" ng-model="eHome" class="form-control birthInput"/>
-		<label>Home goals</label>
-		<input type="number" ng-model="eHomeGoals" class="form-control number"/>
-	</div>
-	<div class="form-group pull-left">
-		<div  ng-repeat="goal in range(eHomeGoals) track by $index">
-			<select class="selectpicker show-tick form-control" data-live-search="true" required>
-				<option ng-repeat="player in homeTeamSquad">{{player.secondName}}</option>
-			</select>
-		</div>
-	</div>
-	<div class="form-group margined pull-left">
-		<label>Guest</label>
-		<input type="text" ng-model="eGuest" class="form-control birthInput"/>
-		<label>Guest goals</label>
-		<input type="text" ng-model="eGuestGoals" class="form-control number"/>
-	</div>
-	<div class="form-group pull-left">
-		<div  ng-repeat="goal in range(eHomeGoals) track by $index">
-			<select class="selectpicker show-tick form-control" data-live-search="true" required>
-				<option ng-repeat="player in guestTeamSquad">{{player.secondName}}</option>
-			</select>
-		</div>
-	</div>
-	<div class="form-group">
-		<label>Date</label>
-		<input type="text" ng-model="eGuest" class="form-control birthInput" readonly/>
-	</div>
-</form>

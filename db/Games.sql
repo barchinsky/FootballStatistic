@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS Cards;
+DROP TABLE IF EXISTS Goals;
 DROP TABLE IF EXISTS Games;
 
 create table Games(
@@ -10,10 +12,6 @@ create table Games(
 	guestTeamRC int DEFAULT 0,
 	homeTeamYC int DEFAULT 0,
 	guestTeamYC int DEFAULT 0,
-	homeTeamFouls int DEFAULT 0,
-	guestTeamFouls int DEFAULT 0,
-	homeTeamScorers varchar(150) DEFAULT '',
-	guestTeamScorers varchar(150) DEFAULT '',
 	gameDate date DEFAULT '2015-01-01',
 	seasonId int NOT NULL,
 	CONSTRAINT FK_GAMES_HOMETEAM_ID FOREIGN KEY (homeTeamId) REFERENCES Teams (id),

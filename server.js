@@ -6,7 +6,7 @@ var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 var db = require("./database");
 
-var host = "localhost";
+var host = "192.168.0.107";//"10.105.30.63";
 
 var port = 9800;
 
@@ -35,10 +35,10 @@ app.post("/seasonResults",function(request,response){
 app.post("/loadTeamSquad",function(request,response){
 	console.log("server:loadTeamSquad()");
 
-	var teamName = request.body.team;
-	console.log("team:"+teamName);
+	var teamId = request.body.teamId;
+	console.log("team:"+teamId);
 
-	loadTeamSquad(teamName,response,sendResponse);
+	loadTeamSquad(teamId,response,sendResponse);
 
 	console.log("~server:loadTeamSquad()");
 });
@@ -48,28 +48,8 @@ app.post("/addGame",function(request,response){
 
 	var game = request.body.game;
 
-	// console.log("Game:"+game+ "Season:"+game.season);
-
-	// console.log("game.home.id: "+game.home.id);
-	// console.log("game.homeTeam: "+game.home.team);
-	// console.log("game.homeGoals: "+game.home.goals);
-	// console.log("game.homeYCNumber: "+game.home.ycNum);
-	// console.log("game.homeRCNumber: "+game.home.rcNum);
-	// console.log("game.homeTeamScorers: "+game.home.scorers);
-	// console.log("game.homeTeamRCOwners: "+game.home.rcOwners);
-	// console.log("game.homeTeamYCOwners: "+game.home.ycOwners);
-
-	// console.log("game.guest.id: "+game.guest.id);
-	// console.log("game.guest.Team: "+game.guest.team);
-	// console.log("game.guest.Goals: "+game.guest.goals);
-	// console.log("game.guest.YCNumber: "+game.guest.ycNum);
-	// console.log("game.guest.RCNumber: "+game.guest.rcNum);
-	// console.log("game.guest.TeamScorers: "+game.guest.scorers);
-	// console.log("game.guest.TeamRCOwners: "+game.guest.rcOwners);
-	// console.log("game.guest.TeamYCOwners: "+game.guest.ycOwners);
-
 	insertGame(game,response,sendResponse);
-	updatePlayerStatistic(game.season,game.home,game.guest);
+	updatePlayerStatistic(game.seasonId, game.home, game.guest);
 
 	console.log("~server::addGame()");
 });
@@ -141,14 +121,14 @@ app.post("/addPlayers",function(request,response){
 
 	// generate string template with players info
 	for(i=0; i < players.length;i++){
-		console.log("Name:"+players[i].name+" Second name:"+players[i].secondName +" Phone:"+players[i].phone);
-		values = values + "('"+players[i].name+"','"+players[i].secondName+"',"+teamId+","+seasonId+",'"+players[i].dateOfBirth+"'),";
+		console.log("Name:"+players[i].name+" Second name:"+players[i].secondName);
+		values = values + "('"+players[i].name+"','"+players[i].secondName+"',"+teamId+","+seasonId+"),";
 	}
 	// console.log("values.length:"+values.length+" last symbol:"+values[values.length-1]);
 	values+=";";
 	values = values.replace(",;",";");
 
-	var sql = "insert into Players(firstName,secondName,teamId,seasonId,dateOfBirth) "+values;
+	var sql = "insert into Players(firstName,secondName,teamId,seasonId) "+values;
 
 	executeSql(sql,response,sendResponse);
 	// console.log("values:"+values);
@@ -188,11 +168,35 @@ app.post("/teamGames",function(request,response){
 	var teamId = request.body.teamId;
 	var seasonId = request.body.seasonId;
 
-	var sql = "select * from Games where seasonId="+seasonId+" and (homeTeamId="+teamId+" or guestTeamId="+teamId+");";
+	//var sql = "select * from Games where seasonId="+seasonId+" and (homeTeamId="+teamId+" or guestTeamId="+teamId+");";
+	var sql = "select \
+		(select t.name from Teams t where t.id = g.homeTeamId) home, \
+		(select t.name from Teams t where t.id = g.guestTeamId) guest, \
+		g.homeTeamGoals homeGoals, \
+		g.guestTeamGoals guestGoals, \
+		g.gameDate date, \
+		g.id id \
+	from Games g \
+		where seasonId="+seasonId+" and \
+		(homeTeamId="+teamId+" or guestTeamId="+teamId+");";
+
 
 	executeSql(sql,response,sendResponse);
 
 	console.log("~server::teamGames");
+
+});
+
+app.post("/deleteGame",function(request, response){
+	console.log("server::deleteGame()");
+
+	var gameId = request.body.id;
+
+	console.log("gameid:"+gameId);
+
+	sendResponse(response,{"status":"1","data":"Request received."});
+
+	console.log("server::~deleteGame()");
 
 });
 
