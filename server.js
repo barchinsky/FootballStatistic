@@ -6,7 +6,7 @@ var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 var db = require("./database");
 
-var host = "192.168.0.107";//"10.105.30.63";
+var host = "192.168.0.103";//"10.105.30.63";
 
 var port = 9800;
 
@@ -200,6 +200,19 @@ app.post("/deleteGame",function(request, response){
 
 });
 
+app.post("/scorers",function(request,response){
+	console.log("server.scorers()");
+	console.log("season.id"+request.body.seasonId);
+
+	var sql = "select * from Scorers where seasonId=" + request.body.seasonId + " order by goals DESC;";
+
+	executeSql(sql,response,sendResponse);
+
+	//sendResponse(response,{"status":"1","data":"Request received."});
+
+	console.log("~server.scorers()");
+});
+
 sendResponse = function(response,data){
 	console.log("prepareResponse()");
 	// Convert data to Json-friendly object
@@ -210,6 +223,7 @@ sendResponse = function(response,data){
 
 	console.log("~prepareResponse()");
 }
+
 
 app.listen(port);
 console.log("Server started at host:"+host+":"+port);

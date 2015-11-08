@@ -7,10 +7,10 @@ mainApp.controller("seasonController",function($scope,$http){
 	$scope.history = [];
 	$scope.historyIndex = 0;
 
-	var host="http://192.168.0.107:9800";
+	var host="http://192.168.0.103:9800";
 	console.log("controller host: "+host);
 
-	$scope.isAdmin = false;
+	$scope.isAdmin = true;
 	$scope.isAuthorized = false;
 	$scope.isAsc = false;
 	$scope.currentUser = "";
@@ -23,6 +23,8 @@ mainApp.controller("seasonController",function($scope,$http){
 	$scope.editActionItems = [{ title:"Game",url:"static/404.htm" },{ title:"Players",url:"static/404.htm" }];
 	$scope.seasonResultHeaders = ["#","Team","Games","Scored","Missed","GA","Points"];
 	$scope.playerStatHeaders= [{ title:"#",fieldName:"" },{ title:"Second name",fieldName:"secondName" },{ title:"First name",fieldName:"firstName" },{ title:"Goals",fieldName:"goals" },{ title:"Red cards",fieldName:"red" },{ title:"Yellow cards",fieldName:"yellow" }];
+	$scope.scorersInfoHeaders = [ "#","Second name","First name","Team","Goals","Games"];
+	$scope.scorersInfo = [{}];
 
 
 	$scope.arrowUp = "<img id='arrowUp' src='media/arrowUp.png'/>";
@@ -199,10 +201,12 @@ mainApp.controller("seasonController",function($scope,$http){
 		//return;
 		// input data validation
 		if($scope.currentSeason.name=="Pick season"){ $scope.notify("Please, select season.",2); return;}
-		if(!$scope.isValidDate($scope.game.date)){ $scope.notify("Invalid date format! Should be 'yyyy/mm/dd'. Please fix and try again",3); return;}
-		if(!game.home.id){ $scope.notify("Please select home team.",2); return; }
-		if(!game.guest.id){ $scope.notify("Please select guest team.",2); return; }
+		if( !$scope.isValidDate($scope.game.date) ) { $scope.notify("Invalid date format! Should be 'yyyy/mm/dd'. Please fix and try again",3); return;}
+		if( !game.home.id){ $scope.notify("Please select home team.",2); return; }
+		if( !game.guest.id){ $scope.notify("Please select guest team.",2); return; }
 		if(game.home.id == game.guest.id) { $scope.notify("Team can't play agains themselves!",2); return; }
+		if( !validateGoals(game.home.goals, game.home.scorers) ) { $scope.notify("Home team goals number mismatch!",3); return; }
+		if( !validateGoals(game.guest.goals, game.guest.scorers) ) { $scope.notify("Guest team goals number mismatch!",3); return; }
 
 		console.log("game.date"+game.date);
 		
@@ -289,6 +293,23 @@ mainApp.controller("seasonController",function($scope,$http){
 		});
 
 		console.log("~controller::loadSeasonInfo()");
+	}
+
+	$scope.loadScorersInfo = function(season){
+		console.log("controller.loadScorersInfo()");
+
+		$scope.setSeason(season);
+
+		console.log("season.id"+season.id);
+
+		$http.post(host+"/scorers",{seasonId:season.id}).success(function(data){
+			$scope.scorersInfo = data["data"];
+
+		});
+
+		console.log("$scope.scorersInfo:"+$scope.scorersInfo);
+
+		console.log("~controller.loadScorersInfo()");
 	}
 
 	$scope.loadTeamSquad = function(teamId, isHome){
@@ -527,7 +548,7 @@ mainApp.controller("seasonController",function($scope,$http){
 		}
 
 		 // First check for the pattern
-		if(!/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(dateString))
+		if( !/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(dateString) )
 			return false;
 
 		// Parse the date parts to integers
@@ -545,7 +566,7 @@ mainApp.controller("seasonController",function($scope,$http){
 		var monthLength = [ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ];
 
 		// Adjust for leap years
-		if(year % 400 == 0 || (year % 100 != 0 && year % 4 == 0))
+		if(year % 400 == 0 || (year % 100 != 0 && year % 4 == 0) )
 			monthLength[1] = 29;
 
 		// Check the range of the day
@@ -631,7 +652,7 @@ mainApp.controller("seasonController",function($scope,$http){
 		return player.secondName + " " + player.firstName;
 	}
 
-	$scope.getGA = function(scored, missed){
+	$scope.getGA = function(scored, missed){ // get goal against
 		console.log("getGA"+scored+missed);
 		return Number.parseInt(scored) - Number.parseInt(missed);
 	}

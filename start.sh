@@ -1,3 +1,3 @@
 #!/usr/bin/fish
 
-node server.js
+nodejs server.js

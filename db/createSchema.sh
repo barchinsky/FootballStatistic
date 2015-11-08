@@ -39,6 +39,7 @@ echo "Creating views..."
 
 ./db.sh < "views/seasonResultsView.sql"
 ./db.sh < "views/playersSeasonStatistic.sql"
+./db.sh < "views/scorers.sql"
 
 echo "Views created."
 

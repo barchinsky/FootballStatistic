@@ -1,0 +1,31 @@
+<h1>Scorers</h1>
+<br>
+<div class="panel panel-default">
+	<!-- Default panel contents -->
+	<div class="panel-heading">
+		<div class="dropdown pull-left" >
+			<button class="btn btn-default dropdown-toggle" type="button" id="menu1" data-toggle="dropdown">{{currentSeason.name}}
+			<span class="caret"></span></button>
+			<ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
+				<li role="presentation" ng-repeat="season in seasons" ng-click="loadScorersInfo(season)"><a role="menuitem" tabindex="-1" href="#">{{season.name}}</a></li>
+			</ul>
+		</div> <!-- dropdown -->
+		<br><br>
+	</div> <!-- panel-heading -->
+	<!-- Table -->
+	<table class="table table-striped">
+		<thead >
+			<th ng-repeat="item in scorersInfoHeaders track by $index" class="text-centered">{{ item }}</th>
+		</thead>
+		<tbody>
+			<tr ng-repeat="player in scorersInfo track by $index" class="text-centered">
+				<td>{{ $index+1 }}</td>
+				<td>{{ player.secondName }}</td>
+				<td>{{ player.firstName }}</td>
+				<td>{{ player.team }}</td>
+				<td>{{ player.goals }}</td>
+				<td>{{ player.games }}</td>
+			</tr>
+		</tbody>
+	</table>
+</div> <!-- panel panel-default -->
